@@ -1,10 +1,37 @@
 ---
-title: My Second Post! (example)
-date: 2019-05-15
+title: 'Basic Deployment: MERN stack'
+date: 2019-12-29
 ---
 
-Wow! I love blogging so much already.
+We're going to be deploying on Heroku.
 
-Did you know that "despite its name, salted duck eggs can also be made from chicken eggs, though the taste and texture will be somewhat different, and the egg yolk will be less rich."? ([Wikipedia Link](http://en.wikipedia.org/wiki/Salted_duck_egg))
+Heroku is a cloudbase service for developers to deploy applications. What that means is that Heroku has virtual machines sitting on their servers thats sole purpose is to run your applications. But before that can happen you must conform to some of Heroku’s rules. In Node Js servers you must set up environmental variables for your application in production mode, such as your mongoDB password/username or client keys/ secret keys. Normally, for example, when you’re running your servers on your local machine with the terminal using commands like `npm start` or `npm run dev` your computer understands what it means because of the scripts in your package.json. So you must configure your package.json to give instructions to the Heroku virtual machine to run your application with `npm start`. 
 
-Yeah, I didn't either.
+After setting up your environmental variables you can begin adding the actual key values to the heroku management page of your application. 
+
+Funny story; make sure to whitelist 0.0.0.0/0 to your MongoDb database. The amount of times I’ve tried to demo my applications to people at meetups, only to sit there waiting for my app to work. I checked the logs and there were no errors with the code, but I come to find out that mongoDB was refusing to connect because only my local IP at home was whitelisted. Now we have the server side all set up, but what about a React front end, or having heroku deploy a create-react-app front end. Heroku very conveniently has a post-build script. So you can add 
+
+‘NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client’ 
+
+to your package.json. 
+
+Here we are letting the heroku virtual machine run the command `npm run build` in the client directory. This creates for us a build folder with compressed js, and css files. Making everything lightning fast for a user to load up. 
+One final step is to have heroku know how to serve the front end files to the user via the build folder that create-react-app has created for us.
+
+```js
+if(process.env.NODE_ENV === 'production'){
+    app.use(express.static('client/build'));
+
+
+    const path = require('path');
+    app.get('*', (req,res) => {
+        res.sendFile(path.resolve(__dirname,'client','build', 'index.html'))
+    });
+    /* npm run build in react transpiles all the perfect react code into the index.html 
+        now we have access to it when we're in production mode aka HEROKU
+    */
+}
+```
+
+
+
